@@ -1,5 +1,4 @@
 # app.py
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -12,7 +11,7 @@ from src.utils import setup_logging, DataLoader
 # Set up page configuration
 st.set_page_config(
     page_title="Retail Sales Forecasting Dashboard",
-    page_layout="wide",
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 

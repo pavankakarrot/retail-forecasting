@@ -30,17 +30,15 @@ class DashboardApp:
         self.forecaster = RetailForecaster()
         self.data_loader = DataLoader("data/")
         
+    # In app.py
     def load_data(self):
-        """Load and cache data for the dashboard."""
-        @st.cache_data
-        def load_cached_data():
-            try:
-                df = self.data_loader.load_data("retail_data.csv")
-                return df
-            except Exception as e:
-                st.error(f"Error loading data: {str(e)}")
-                return None
-        return load_cached_data()
+    """Load and cache data for the dashboard."""
+        try:
+        features_df, target_df = self.data_loader.load_processed_data()
+            return features_df, target_df
+        except Exception as e:
+            st.error(f"Error loading data: {str(e)}")
+            return None, None
 
     def create_sidebar(self):
         """Create the sidebar with control options."""

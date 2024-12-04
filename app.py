@@ -32,7 +32,7 @@ class DashboardApp:
         
     # In app.py
     def load_data(self):
-    """Load and cache data for the dashboard."""
+        """Load and cache data for the dashboard."""
         try:
         features_df, target_df = self.data_loader.load_processed_data()
             return features_df, target_df

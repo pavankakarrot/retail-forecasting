@@ -41,52 +41,36 @@ def setup_logging(log_level: str = "INFO") -> logging.Logger:
 logger = setup_logging()
 
 class DataLoader:
-    """Class to handle all data loading operations."""
-    
     def __init__(self, data_dir: Union[str, Path]):
-        """
-        Initialize DataLoader with data directory path.
-        
-        Args:
-            data_dir: Path to the directory containing data files
-        """
         self.data_dir = Path(data_dir)
-        if not self.data_dir.exists():
-            raise FileNotFoundError(f"Data directory not found: {self.data_dir}")
-    
-    def load_data(self, filename: str) -> pd.DataFrame:
+
+    def load_processed_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Load data from specified file.
+        Load preprocessed features and target data.
         
-        Args:
-            filename: Name of the file to load
-            
         Returns:
-            Pandas DataFrame containing the loaded data
-            
-        Raises:
-            FileNotFoundError: If the file doesn't exist
-            ValueError: If the file format is not supported
+            Tuple containing:
+            - Features DataFrame
+            - Target DataFrame
         """
         try:
-            # For Streamlit Cloud, use direct file path
-            file_path = Path(filename) if str(filename).startswith('/') else self.data_dir / filename
+            # Load features
+            features_path = self.data_dir / "processed" / "processed_features.csv"
+            if not features_path.exists():
+                raise FileNotFoundError(f"Processed features not found: {features_path}")
             
-            if not file_path.exists():
-                raise FileNotFoundError(f"File not found: {file_path}")
+            features_df = pd.read_csv(features_path)
             
-            # Determine file type and load accordingly
-            if file_path.suffix == '.csv':
-                df = pd.read_csv(file_path)
-                logger.info(f"Successfully loaded CSV file: {filename}")
-                return df
-            elif file_path.suffix in ['.xlsx', '.xls']:
-                df = pd.read_excel(file_path)
-                logger.info(f"Successfully loaded Excel file: {filename}")
-                return df
-            else:
-                raise ValueError(f"Unsupported file format: {file_path.suffix}")
+            # Load target
+            target_path = self.data_dir / "processed" / "target_data.csv"
+            if not target_path.exists():
+                raise FileNotFoundError(f"Target data not found: {target_path}")
                 
+            target_df = pd.read_csv(target_path)
+            
+            logger.info("Successfully loaded processed data")
+            return features_df, target_df
+            
         except Exception as e:
-            logger.error(f"Error loading file {filename}: {str(e)}")
+            logger.error(f"Error loading processed data: {str(e)}")
             raise

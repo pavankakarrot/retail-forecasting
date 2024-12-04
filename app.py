@@ -18,88 +18,75 @@ st.set_page_config(
 # Initialize logging
 logger = setup_logging()
 
+# app.py
+
 class DashboardApp:
-    """
-    Main dashboard application class for retail forecasting.
-    This class handles the Streamlit interface and coordinates
-    between data processing and modeling components.
-    """
+    """Main dashboard application class for retail forecasting."""
+    
     def __init__(self):
-        """Initialize dashboard components and load necessary data."""
+        """Initialize dashboard components."""
         self.preprocessor = RetailPreprocessor()
         self.forecaster = RetailForecaster()
-        self.data_loader = DataLoader("data/")
+        self.data_loader = DataLoader("data")  # Specify the data directory
         
-    # In app.py
     def load_data(self):
         """Load and cache data for the dashboard."""
-        try:
-            features_df, target_df = self.data_loader.load_processed_data()
-            return features_df, target_df
-        except Exception as e:
-            st.error(f"Error loading data: {str(e)}")
-            return None, None
-
-    def create_sidebar(self):
-        """Create the sidebar with control options."""
-        st.sidebar.header("Forecast Settings")
-        
-        # Date range selector
-        st.sidebar.subheader("Select Date Range")
-        start_date = st.sidebar.date_input(
-            "Start Date",
-            value=datetime.now() - timedelta(days=365)
-        )
-        end_date = st.sidebar.date_input(
-            "End Date",
-            value=datetime.now()
-        )
-        
-        # Forecast horizon selector
-        forecast_horizon = st.sidebar.slider(
-            "Forecast Horizon (days)",
-            min_value=7,
-            max_value=90,
-            value=30
-        )
-        
-        # Model parameters
-        st.sidebar.subheader("Model Parameters")
-        prophet_weight = st.sidebar.slider(
-            "Prophet Weight",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.4
-        )
-        
-        return start_date, end_date, forecast_horizon, prophet_weight
+        @st.cache_data
+        def load_cached_data():
+            try:
+                # Try loading the data file
+                df = self.data_loader.load_data("retail_data.csv")
+                return df
+            except Exception as e:
+                st.error(f"Error loading data: {str(e)}")
+                return None
+        return load_cached_data()
 
     def show_data_overview(self, df: pd.DataFrame):
-        """Display data overview section."""
+        """
+        Display data overview section with proper error handling.
+        
+        Args:
+            df: DataFrame containing the retail data
+        """
+        if df is None:
+            st.error("No data available to display")
+            return
+            
         st.header("Data Overview")
         
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric(
-                "Total Sales",
-                f"${df['TotalAmount'].sum():,.2f}",
-                "Historical Data"
-            )
+        try:
+            col1, col2, col3 = st.columns(3)
             
-        with col2:
-            st.metric(
-                "Average Daily Sales",
-                f"${df.groupby('InvoiceDate')['TotalAmount'].sum().mean():,.2f}",
-                "Per Day"
-            )
-            
-        with col3:
-            st.metric(
-                "Total Transactions",
-                f"{len(df):,}",
-                "Orders"
-            )
+            with col1:
+                total_amount = df['TotalAmount'].sum() if 'TotalAmount' in df.columns else 0
+                st.metric(
+                    "Total Sales",
+                    f"${total_amount:,.2f}",
+                    "Historical Data"
+                )
+                
+            with col2:
+                if 'InvoiceDate' in df.columns and 'TotalAmount' in df.columns:
+                    daily_avg = df.groupby('InvoiceDate')['TotalAmount'].sum().mean()
+                else:
+                    daily_avg = 0
+                st.metric(
+                    "Average Daily Sales",
+                    f"${daily_avg:,.2f}",
+                    "Per Day"
+                )
+                
+            with col3:
+                st.metric(
+                    "Total Transactions",
+                    f"{len(df):,}",
+                    "Orders"
+                )
+                
+        except Exception as e:
+            st.error(f"Error displaying data overview: {str(e)}")
+            logger.error(f"Data overview error: {str(e)}")
 
     def plot_sales_trend(self, df: pd.DataFrame):
         """Create and display sales trend visualization."""

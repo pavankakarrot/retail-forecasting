@@ -40,37 +40,54 @@ def setup_logging(log_level: str = "INFO") -> logging.Logger:
 # Initialize logger
 logger = setup_logging()
 
-class DataLoader:
-    def __init__(self, data_dir: Union[str, Path]):
-        self.data_dir = Path(data_dir)
+# src/utils.py
 
-    def load_processed_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
+class DataLoader:
+    """Class to handle all data loading operations."""
+    
+    def __init__(self, data_dir: Union[str, Path]):
         """
-        Load preprocessed features and target data.
+        Initialize DataLoader with data directory path.
         
+        Args:
+            data_dir: Path to the directory containing data files
+        """
+        self.data_dir = Path(data_dir)
+        
+    def load_data(self, filename: str) -> pd.DataFrame:
+        """
+        Load data from specified file with flexible path handling.
+        
+        Args:
+            filename: Name of the file to load
+            
         Returns:
-            Tuple containing:
-            - Features DataFrame
-            - Target DataFrame
+            pandas DataFrame containing the loaded data
         """
         try:
-            # Load features
-            features_path = self.data_dir / "processed" / "processed_features.csv"
-            if not features_path.exists():
-                raise FileNotFoundError(f"Processed features not found: {features_path}")
+            # Handle path for both local and Streamlit Cloud environments
+            potential_paths = [
+                Path(retail_data.csv),  # Direct path
+                self.data_dir / retail_data.csv,  # data/filename
+                self.data_dir / "raw" / retail_data.csv,  # data/raw/filename
+                self.data_dir / "processed" / processed_features.csv
+                self.data_dir / "processed" / target_data.csv # data/processed/filename
+            ]
             
-            features_df = pd.read_csv(features_path)
+            # Try each path until we find the file
+            for file_path in potential_paths:
+                if file_path.exists():
+                    logger.info(f"Loading data from: {retail_data.csv}")
+                    df = pd.read_csv(retail_data.csv)
+                    
+                    # Convert date column if it exists
+                    if 'InvoiceDate' in df.columns:
+                        df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+                    
+                    return df
             
-            # Load target
-            target_path = self.data_dir / "processed" / "target_data.csv"
-            if not target_path.exists():
-                raise FileNotFoundError(f"Target data not found: {target_path}")
-                
-            target_df = pd.read_csv(target_path)
-            
-            logger.info("Successfully loaded processed data")
-            return features_df, target_df
+            raise FileNotFoundError(f"Could not find {retail_data.csv} in any of the expected locations")
             
         except Exception as e:
-            logger.error(f"Error loading processed data: {str(e)}")
+            logger.error(f"Error loading data: {str(e)}")
             raise

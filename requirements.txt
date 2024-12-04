@@ -5,3 +5,4 @@ prophet
 xgboost
 plotly
 scikit-learn
+pyyaml

@@ -1,4 +1,6 @@
 # src/utils.py
+# Purpose: Contains utility functions and classes for data loading and logging
+
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Union, Optional
@@ -6,20 +8,24 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
-# Set up logging configuration
 def setup_logging(log_level: str = "INFO") -> logging.Logger:
     """
     Configure logging for the project.
+    Creates both console and file handlers for comprehensive logging.
     
     Args:
         log_level: Desired logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-        
+    
     Returns:
-        Logger object configured with the specified settings
+        Configured logger instance
     """
     # Create a logger
     logger = logging.getLogger("retail_forecast")
     
+    # Prevent duplicate handlers
+    if logger.handlers:
+        return logger
+        
     # Set logging level
     logger.setLevel(getattr(logging, log_level.upper()))
     
@@ -39,8 +45,6 @@ def setup_logging(log_level: str = "INFO") -> logging.Logger:
 
 # Initialize logger
 logger = setup_logging()
-
-# src/utils.py
 
 class DataLoader:
     """Class to handle all data loading operations."""
@@ -67,18 +71,17 @@ class DataLoader:
         try:
             # Handle path for both local and Streamlit Cloud environments
             potential_paths = [
-                Path(retail_data.csv),  # Direct path
-                self.data_dir / retail_data.csv,  # data/filename
-                self.data_dir / "raw" / retail_data.csv,  # data/raw/filename
-                self.data_dir / "processed" / processed_features.csv
-                self.data_dir / "processed" / target_data.csv # data/processed/filename
+                Path(filename),  # Direct path
+                self.data_dir / filename,  # data/filename
+                self.data_dir / "raw" / filename,  # data/raw/filename
+                self.data_dir / "processed" / filename  # data/processed/filename
             ]
             
             # Try each path until we find the file
             for file_path in potential_paths:
                 if file_path.exists():
-                    logger.info(f"Loading data from: {retail_data.csv}")
-                    df = pd.read_csv(retail_data.csv)
+                    logger.info(f"Loading data from: {file_path}")
+                    df = pd.read_csv(file_path)
                     
                     # Convert date column if it exists
                     if 'InvoiceDate' in df.columns:
@@ -86,7 +89,7 @@ class DataLoader:
                     
                     return df
             
-            raise FileNotFoundError(f"Could not find {retail_data.csv} in any of the expected locations")
+            raise FileNotFoundError(f"Could not find {filename} in any of the expected locations")
             
         except Exception as e:
             logger.error(f"Error loading data: {str(e)}")

@@ -1,11 +1,10 @@
-# Import main classes for easier access
-from .preprocessing import RetailPreprocessor
-from .modeling import RetailForecaster
-from .utils import setup_logging, DataLoader
+# src/__init__.py
+# Purpose: Package initialization and version information
+
+"""
+Retail Forecasting package initialization.
+This module provides access to the main components of the forecasting system.
+"""
 
 # Version information
 __version__ = '1.0.0'
-
-# Package metadata
-__author__ = 'Pavan Kakarrot'
-__description__ = 'Retail Sales Forecasting Package'

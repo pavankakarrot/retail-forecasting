@@ -72,15 +72,15 @@ class DataLoader:
             # Handle path for both local and Streamlit Cloud environments
             potential_paths = [
                 Path(retail_data),  # Direct path
-                self.data_dir / retail_data,  # data/filename
-                self.data_dir / "raw" / retail_data,  # data/raw/filename
-                self.data_dir / "processed" / target_data  # data/processed/filename
+                self.data_dir / retail_data.csv,  # data/filename
+                self.data_dir / "raw" / retail_data.csv,  # data/raw/filename
+                self.data_dir / "processed" / processed_features.csv  # data/processed/filename
             ]
             
             # Try each path until we find the file
             for file_path in potential_paths:
                 if file_path.exists():
-                    logger.info(f"Loading data from: {retail_data}")
+                    logger.info(f"Loading data from: {file_path}")
                     df = pd.read_csv(file_path)
                     
                     # Convert date column if it exists

@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 from src.preprocessing import RetailPreprocessor
 from src.modeling import RetailForecaster
 from src.utils import setup_logging, DataLoader
+import os
+st.write("Current directory:", os.getcwd())
+st.write("Files in data/raw:", os.listdir("data/raw"))
 
 # Set up logging
 logger = setup_logging()

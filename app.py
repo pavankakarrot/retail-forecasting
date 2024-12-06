@@ -1,5 +1,12 @@
 # app.py
 import streamlit as st
+
+st.set_page_config(
+    page_title="Retail Sales Forecasting Dashboard",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -13,13 +20,6 @@ st.write("Files in data/raw:", os.listdir("data/raw"))
 
 # Set up logging
 logger = setup_logging()
-
-# Set up page configuration
-st.set_page_config(
-   page_title="Retail Sales Forecasting Dashboard",
-   layout="wide",
-   initial_sidebar_state="expanded"
-)
 
 class DashboardApp:
    def __init__(self):

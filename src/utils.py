@@ -69,9 +69,9 @@ class DataLoader:
         
            return df
         
-    except Exception as e:
-        logger.error(f"Error details: {str(e)}")
-        raise
+       except Exception as e:
+           logger.error(f"Error details: {str(e)}")
+           raise
 
    def save_data(self, df: pd.DataFrame, filename: str, subdir: str = "processed") -> None:
        """Save DataFrame to specified location."""

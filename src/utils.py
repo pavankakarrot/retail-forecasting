@@ -58,7 +58,7 @@ class DataLoader:
         """
         self.data_dir = Path(data_dir)
         
-    def load_data(self, filename: str) -> pd.DataFrame:
+    def load_data(self, retail_data: str) -> pd.DataFrame:
         """
         Load data from specified file with flexible path handling.
         
@@ -80,8 +80,8 @@ class DataLoader:
             # Try each path until we find the file
             for file_path in potential_paths:
                 if file_path.exists():
-                    logger.info(f"Loading data from: {file_path}")
-                    df = pd.read_csv(file_path)
+                    logger.info(f"Loading data from: {retail_data.csv}")
+                    df = pd.read_csv(retail_data.csv)
                     
                     # Convert date column if it exists
                     if 'InvoiceDate' in df.columns:

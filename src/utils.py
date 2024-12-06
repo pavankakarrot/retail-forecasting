@@ -46,15 +46,20 @@ class DataLoader:
            raise FileNotFoundError(f"Data directory not found: {self.data_dir}")
            
    def load_data(self, filename: str) -> pd.DataFrame:
-       """Load data from specified file with flexible path handling."""
        try:
-           # Handle path for both local and Streamlit Cloud environments
-           potential_paths = [
-               Path(filename),  # Direct path
-               self.data_dir / filename,  # data/filename
-               self.data_dir / "raw" / filename,  # data/raw/filename
-               self.data_dir / "processed" / filename  # data/processed/filename
-           ]
+           file_path = self.data_dir / "raw" / filename
+           logger.info(f"Attempting to load from: {file_path}")
+        
+           if not file_path.exists():
+               raise FileNotFoundError(f"File not found at {file_path}")
+            
+           df = pd.read_csv(file_path, encoding='utf-8')
+           logger.info(f"Successfully loaded data with shape: {df.shape}")
+           return df
+        
+       except Exception as e:
+           logger.error(f"Error loading data: {type(e).__name__} - {str(e)}")
+           raise
            
            # Try each path until we find the file
            for file_path in potential_paths:

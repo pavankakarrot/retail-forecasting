@@ -48,61 +48,23 @@ class DataLoader:
    def load_data(self, filename: str) -> pd.DataFrame:
        try:
            file_path = self.data_dir / "raw" / filename
-           logger.info(f"Attempting to load from: {file_path}")
+           logger.info(f"Reading file: {file_path.absolute()}")
         
-           if not file_path.exists():
-               raise FileNotFoundError(f"File not found at {file_path}")
+           # Try reading first few lines to debug
+           with open(file_path, 'r', encoding='utf-8') as f:
+               logger.info(f"File preview:\n{f.read(200)}")
             
            df = pd.read_csv(file_path, encoding='utf-8')
-           logger.info(f"Successfully loaded data with shape: {df.shape}")
+        
+           if 'InvoiceDate' in df.columns:
+               df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+            
+           logger.info(f"Loaded data shape: {df.shape}")
            return df
         
        except Exception as e:
-           logger.error(f"Error loading data: {type(e).__name__} - {str(e)}")
+           logger.error(f"Load error: {type(e).__name__} - {str(e)}")
            raise
-           
-           # Try each path until we find the file
-           for file_path in potential_paths:
-               if file_path.exists():
-                   logger.info(f"Loading data from: {file_path}")
-                   df = pd.read_csv(file_path)
-                   
-                   # Convert date column if it exists
-                   if 'InvoiceDate' in df.columns:
-                       df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
-                   
-                   return df
-           
-           raise FileNotFoundError(f"Could not find {filename} in any of the expected locations: {[str(p) for p in potential_paths]}")
-           
-       except Exception as e:
-           logger.error(f"Error loading data: {str(e)}")
-           raise
-
-   def validate_data(self, df: pd.DataFrame, required_cols: List[str]) -> bool:
-       """Validate DataFrame has required columns and correct data types."""
-       try:
-           # Check for required columns
-           missing_cols = set(required_cols) - set(df.columns)
-           if missing_cols:
-               logger.error(f"Missing required columns: {missing_cols}")
-               return False
-           
-           # Check for empty DataFrame
-           if df.empty:
-               logger.error("DataFrame is empty")
-               return False
-               
-           # Check for null values in required columns
-           null_counts = df[required_cols].isnull().sum()
-           if null_counts.any():
-               logger.warning(f"Null values found in columns: \n{null_counts[null_counts > 0]}")
-               
-           return True
-           
-       except Exception as e:
-           logger.error(f"Error during DataFrame validation: {str(e)}")
-           return False
 
    def save_data(self, df: pd.DataFrame, filename: str, subdir: str = "processed") -> None:
        """Save DataFrame to specified location."""

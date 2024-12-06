@@ -58,39 +58,29 @@ class DataLoader:
         """
         self.data_dir = Path(data_dir)
         
-    def load_data(self, retail_data: str) -> pd.DataFrame:
-        """
-        Load data from specified file with flexible path handling.
+    def load_data(self, filename: str) -> pd.DataFrame:
+    try:
+        # Handle path for both local and Streamlit Cloud environments
+        potential_paths = [
+            Path(filename),  # Direct path
+            self.data_dir / filename,  # data/filename
+            self.data_dir / "raw" / filename,  # data/raw/filename
+            self.data_dir / "processed" / filename  # data/processed/filename
+        ]
         
-        Args:
-            filename: Name of the file to load
-            
-        Returns:
-            pandas DataFrame containing the loaded data
-        """
-        try:
-            # Handle path for both local and Streamlit Cloud environments
-            potential_paths = [
-                Path(retail_data),  # Direct path
-                self.data_dir / retail_data.csv,  # data/filename
-                self.data_dir / "raw" / retail_data.csv,  # data/raw/filename
-                self.data_dir / "processed" / processed_features.csv  # data/processed/filename
-            ]
-            
-            # Try each path until we find the file
-            for file_path in potential_paths:
-                if file_path.exists():
-                    logger.info(f"Loading data from: {retail_data.csv}")
-                    df = pd.read_csv(retail_data.csv)
-                    
-                    # Convert date column if it exists
-                    if 'InvoiceDate' in df.columns:
-                        df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
-                    
-                    return df
-            
-            raise FileNotFoundError(f"Could not find {filename} in any of the expected locations")
-            
-        except Exception as e:
-            logger.error(f"Error loading data: {str(e)}")
-            raise
+        # Try each path until we find the file
+        for file_path in potential_paths:
+            if file_path.exists():
+                logger.info(f"Loading data from: {file_path}")
+                df = pd.read_csv(file_path)
+                
+                if 'InvoiceDate' in df.columns:
+                    df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+                
+                return df
+        
+        raise FileNotFoundError(f"Could not find {filename} in any of the expected locations")
+        
+    except Exception as e:
+        logger.error(f"Error loading data: {str(e)}")
+        raise

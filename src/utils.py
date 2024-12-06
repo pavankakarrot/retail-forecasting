@@ -48,23 +48,30 @@ class DataLoader:
    def load_data(self, filename: str) -> pd.DataFrame:
        try:
            file_path = self.data_dir / "raw" / filename
-           logger.info(f"Reading file: {file_path.absolute()}")
         
-           # Try reading first few lines to debug
-           with open(file_path, 'r', encoding='utf-8') as f:
-               logger.info(f"File preview:\n{f.read(200)}")
-            
-           df = pd.read_csv(file_path, encoding='utf-8')
+           # Check file exists and size
+           if file_path.exists():
+               size = file_path.stat().st_size
+               logger.info(f"File size: {size} bytes")
+           else:
+               raise FileNotFoundError(f"File not found: {file_path}")
+
+           # Read file content directly first
+           with open(file_path, 'rb') as f:
+               content = f.read(1000)  # Read first 1000 bytes
+               logger.info(f"File preview: {content[:200]}")
+
+           # Try different pandas read options
+           df = pd.read_csv(file_path, encoding='utf-8', on_bad_lines='skip')
         
-           if 'InvoiceDate' in df.columns:
-               df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
-            
-           logger.info(f"Loaded data shape: {df.shape}")
+           logger.info(f"Loaded DataFrame shape: {df.shape}")
+           logger.info(f"Columns: {df.columns.tolist()}")
+        
            return df
         
-       except Exception as e:
-           logger.error(f"Load error: {type(e).__name__} - {str(e)}")
-           raise
+    except Exception as e:
+        logger.error(f"Error details: {str(e)}")
+        raise
 
    def save_data(self, df: pd.DataFrame, filename: str, subdir: str = "processed") -> None:
        """Save DataFrame to specified location."""
